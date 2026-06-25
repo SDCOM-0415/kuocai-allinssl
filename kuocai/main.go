@@ -19,8 +19,8 @@ type Response struct {
 }
 
 type ActionParam struct {
-	Key   string      `json:"-"`
-	Value interface{} `json:"-"`
+	Key   string `json:"-"`
+	Label string `json:"-"`
 }
 
 type actionJSON struct {
@@ -42,7 +42,7 @@ func (op orderedParams) MarshalJSON() ([]byte, error) {
 			buf = append(buf, ',')
 		}
 		key, _ := json.Marshal(p.Key)
-		val, _ := json.Marshal(p.Value)
+		val, _ := json.Marshal(p.Label)
 		buf = append(buf, key...)
 		buf = append(buf, ':')
 		buf = append(buf, val...)
@@ -66,24 +66,18 @@ var pluginMeta = pluginMetaJSON{
 	Version:     "1.0.0",
 	Author:      "allinssl",
 	Config: orderedParams{
-		{Key: "baseUrl", Value: "平台地址"},
-		{Key: "username", Value: "登录邮箱/手机"},
-		{Key: "password", Value: map[string]interface{}{
-			"label": "密码",
-			"type":  "password",
-		}},
+		{Key: "baseUrl", Label: "平台地址"},
+		{Key: "username", Label: "登录邮箱/手机"},
+		{Key: "password", Label: "密码"},
 	},
 	Actions: []actionJSON{
 		{
 			Name:        "check",
 			Description: "验证账号配置是否正确",
 			Params: orderedParams{
-				{Key: "baseUrl", Value: "平台地址"},
-				{Key: "username", Value: "登录邮箱/手机"},
-				{Key: "password", Value: map[string]interface{}{
-					"label": "密码",
-					"type":  "password",
-				}},
+				{Key: "baseUrl", Label: "平台地址"},
+				{Key: "username", Label: "登录邮箱/手机"},
+				{Key: "password", Label: "密码"},
 			},
 		},
 		{
