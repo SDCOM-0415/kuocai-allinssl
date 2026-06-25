@@ -8,15 +8,26 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
-const baseURL = "https://rcdn.hydun.com"
+const defaultBaseURL = "https://rcdn.hydun.com"
 
 type checkResponse struct {
 	Code    string      `json:"code"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
+}
+
+func getBaseURL(params map[string]interface{}) string {
+	baseUrl, _ := params["baseUrl"].(string)
+	baseUrl = strings.TrimSpace(baseUrl)
+	if baseUrl == "" {
+		return defaultBaseURL
+	}
+	baseUrl = strings.TrimRight(baseUrl, "/")
+	return baseUrl
 }
 
 func check(params map[string]interface{}) (*Response, error) {
@@ -27,7 +38,7 @@ func check(params map[string]interface{}) (*Response, error) {
 		return nil, errors.New("请填写登录邮箱/手机和密码")
 	}
 
-	_, err := doRequest("/login/loginUser", map[string]interface{}{
+	_, err := doRequest(params, "/login/loginUser", map[string]interface{}{
 		"userAccount": username,
 		"userPwd":     password,
 		"remember":    "true",
@@ -63,7 +74,7 @@ func Upload(params map[string]interface{}) (*Response, error) {
 		return nil, errors.New("证书或私钥不能为空")
 	}
 
-	token, err := doRequest("/login/loginUser", map[string]interface{}{
+	token, err := doRequest(params, "/login/loginUser", map[string]interface{}{
 		"userAccount": username,
 		"userPwd":     password,
 		"remember":    "true",
@@ -79,7 +90,7 @@ func Upload(params map[string]interface{}) (*Response, error) {
 
 	cookies := fmt.Sprintf("kuocai_cdn_token=%s", tokenStr)
 
-	res, err := doRequest("/CdnDomainHttps/httpsConfiguration", map[string]interface{}{
+	res, err := doRequest(params, "/CdnDomainHttps/httpsConfiguration", map[string]interface{}{
 		"doMainId": domainId,
 		"https": map[string]interface{}{
 			"certificate_name":   generateUniqID(),
@@ -101,13 +112,14 @@ func Upload(params map[string]interface{}) (*Response, error) {
 	}, nil
 }
 
-func doRequest(path string, params map[string]interface{}, cookies *string) (interface{}, error) {
+func doRequest(params map[string]interface{}, path string, bodyParams map[string]interface{}, cookies *string) (interface{}, error) {
+	baseURL := getBaseURL(params)
 	requestURL := baseURL + path
 
 	var body []byte
 	var err error
 
-	body, err = json.Marshal(params)
+	body, err = json.Marshal(bodyParams)
 	if err != nil {
 		return nil, fmt.Errorf("编码参数失败: %v", err)
 	}

@@ -32,10 +32,11 @@ go.work.sum
 # .vscode/
 
 # Project specific
-yrdcdn/yrdcdn-linux-amd64
-yrdcdn/yrdcdn-windows-amd64.exe
-yrdcdn/yrdcdn-darwin-amd64
-yrdcdn/yrdcdn
+kuocai/kuocai-linux-amd64
+kuocai/kuocai-linux-arm64
+kuocai/kuocai-linux-armv7
+kuocai/kuocai-windows-amd64.exe
+kuocai/kuocai
 
 .kagent/
 *.log
