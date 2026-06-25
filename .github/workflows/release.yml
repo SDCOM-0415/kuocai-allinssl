@@ -32,11 +32,6 @@ jobs:
         cd plugins/yrdcdn
         GOOS=windows GOARCH=amd64 go build -o yrdcdn-windows-amd64.exe .
 
-    - name: Build for macOS
-      run: |
-        cd plugins/yrdcdn
-        GOOS=darwin GOARCH=amd64 go build -o yrdcdn-darwin-amd64 .
-
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -44,7 +39,6 @@ jobs:
         path: |
           plugins/yrdcdn/yrdcdn-linux-amd64
           plugins/yrdcdn/yrdcdn-windows-amd64.exe
-          plugins/yrdcdn/yrdcdn-darwin-amd64
 
     - name: Create Release
       uses: ncipollo/release-action@v1
@@ -57,9 +51,7 @@ jobs:
           **Assets:**
           - yrdcdn-linux-amd64 - Linux x86_64
           - yrdcdn-windows-amd64.exe - Windows x86_64
-          - yrdcdn-darwin-amd64 - macOS x86_64
         artifacts: |
           plugins/yrdcdn/yrdcdn-linux-amd64
           plugins/yrdcdn/yrdcdn-windows-amd64.exe
-          plugins/yrdcdn/yrdcdn-darwin-amd64
         token: ${{ secrets.GITHUB_TOKEN }}
