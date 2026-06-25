@@ -29,11 +29,13 @@ jobs:
       run: |
         cd plugins/yrdcdn
         go build -o yrdcdn-linux-amd64 .
+        chmod +x yrdcdn-linux-amd64
 
     - name: Build for Windows
       run: |
         cd plugins/yrdcdn
         GOOS=windows GOARCH=amd64 go build -o yrdcdn-windows-amd64.exe .
+        chmod +x yrdcdn-windows-amd64.exe
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
