@@ -103,10 +103,8 @@ func main() {
 func getMetadata() *Response {
 	return &Response{
 		Status:  "success",
-		Message: "获取元数据成功",
-		Result: map[string]interface{}{
-			"meta": pluginMeta,
-		},
+		Message: "插件信息",
+		Result:  pluginMeta,
 	}
 }
 
