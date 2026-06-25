@@ -29,7 +29,11 @@ var pluginMeta = map[string]interface{}{
 	"description": "括彩CDN SSL证书部署插件，支持所有基于括彩CDN系统的平台",
 	"version":     "1.0.0",
 	"author":      "allinssl",
-	"config": json.RawMessage(`{"baseUrl":"平台地址","username":"登录邮箱/手机","password":"密码"}`),
+	"config": map[string]interface{}{
+		"baseUrl":  "平台地址",
+		"username": "登录邮箱/手机",
+		"password": "密码",
+	},
 	"actions": []ActionInfo{
 		{
 			Name:        "upload",
