@@ -1,0 +1,8 @@
+plugins/yrdcdn/yrdcdn-linux-amd64
+plugins/yrdcdn/yrdcdn-windows-amd64.exe
+plugins/yrdcdn/yrdcdn-darwin-amd64
+plugins/yrdcdn/yrdcdn
+
+.kagent/
+*.log
+.DS_Store
