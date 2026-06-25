@@ -28,31 +28,6 @@ func getBaseURL(params map[string]interface{}) (string, error) {
 	return baseUrl, nil
 }
 
-func check(params map[string]interface{}) (*Response, error) {
-	username, _ := params["username"].(string)
-	password, _ := params["password"].(string)
-
-	if username == "" || password == "" {
-		return nil, errors.New("请填写登录邮箱/手机和密码")
-	}
-
-	_, err := doRequest(params, "/login/loginUser", map[string]interface{}{
-		"userAccount": username,
-		"userPwd":     password,
-		"remember":    "true",
-	}, nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &Response{
-		Status:  "success",
-		Message: "账号验证成功",
-		Result:  map[string]interface{}{},
-	}, nil
-}
-
 func Upload(params map[string]interface{}) (*Response, error) {
 	certStr, _ := params["cert"].(string)
 	keyStr, _ := params["key"].(string)

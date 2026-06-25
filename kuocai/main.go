@@ -72,15 +72,6 @@ var pluginMeta = pluginMetaJSON{
 	},
 	Actions: []actionJSON{
 		{
-			Name:        "check",
-			Description: "验证账号配置是否正确",
-			Params: orderedParams{
-				{Key: "baseUrl", Label: "平台地址"},
-				{Key: "username", Label: "登录邮箱/手机"},
-				{Key: "password", Label: "密码"},
-			},
-		},
-		{
 			Name:        "upload",
 			Description: "部署SSL证书到括彩CDN平台",
 			Params: map[string]interface{}{
@@ -114,13 +105,6 @@ func main() {
 				Actions []actionJSON `json:"actions"`
 			}{Actions: pluginMeta.Actions},
 		})
-	case "check":
-		resp, err := check(req.Params)
-		if err != nil {
-			outputError("检查失败", err)
-			return
-		}
-		outputJSON(resp)
 	case "upload":
 		resp, err := Upload(req.Params)
 		if err != nil {
