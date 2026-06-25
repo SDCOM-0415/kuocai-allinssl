@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -17,27 +15,24 @@ import (
 const baseURL = "https://rcdn.hydun.com"
 
 type checkResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code    string      `json:"code"`
+	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
 
 func check(params map[string]interface{}) (*Response, error) {
 	username, _ := params["username"].(string)
 	password, _ := params["password"].(string)
-	proxy, _ := params["proxy"].(float64)
 
 	if username == "" || password == "" {
-		return nil, errors.New("请填写控制台账号和密码")
+		return nil, errors.New("请填写登录邮箱/手机和密码")
 	}
-
-	proxyEnabled := proxy == 1
 
 	_, err := doRequest("/login/loginUser", map[string]interface{}{
 		"userAccount": username,
 		"userPwd":     password,
-		"remember":   "true",
-	}, proxyEnabled, nil)
+		"remember":    "true",
+	}, nil)
 
 	if err != nil {
 		return nil, err
@@ -56,7 +51,6 @@ func deploy(params map[string]interface{}) (*Response, error) {
 	privatekey, _ := params["privatekey"].(string)
 	username, _ := params["username"].(string)
 	password, _ := params["password"].(string)
-	proxy, _ := params["proxy"].(float64)
 
 	if id == "" {
 		return nil, errors.New("域名ID不能为空")
@@ -66,13 +60,11 @@ func deploy(params map[string]interface{}) (*Response, error) {
 		return nil, errors.New("证书或私钥不能为空")
 	}
 
-	proxyEnabled := proxy == 1
-
 	token, err := doRequest("/login/loginUser", map[string]interface{}{
 		"userAccount": username,
 		"userPwd":     password,
-		"remember":   "true",
-	}, proxyEnabled, nil)
+		"remember":    "true",
+	}, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -87,13 +79,13 @@ func deploy(params map[string]interface{}) (*Response, error) {
 	_, err = doRequest("/CdnDomainHttps/httpsConfiguration", map[string]interface{}{
 		"doMainId": id,
 		"https": map[string]interface{}{
-			"certificate_name":    generateUniqID(),
-			"certificate_source":  "0",
-			"certificate_value":    fullchain,
-			"https_status":         "on",
-			"private_key":          privatekey,
+			"certificate_name":   generateUniqID(),
+			"certificate_source": "0",
+			"certificate_value":  fullchain,
+			"https_status":       "on",
+			"private_key":        privatekey,
 		},
-	}, proxyEnabled, &cookies)
+	}, &cookies)
 
 	if err != nil {
 		return nil, err
@@ -108,22 +100,15 @@ func deploy(params map[string]interface{}) (*Response, error) {
 	}, nil
 }
 
-func doRequest(path string, params map[string]interface{}, proxy bool, cookies *string) (interface{}, error) {
+func doRequest(path string, params map[string]interface{}, cookies *string) (interface{}, error) {
 	requestURL := baseURL + path
 
 	var body []byte
 	var err error
-	isJSON := false
 
-	if strings.Contains(path, "/login") || strings.Contains(path, "/CdnDomainHttps") {
-		body, err = json.Marshal(params)
-		isJSON = true
-	} else {
-		formData := url.Values{}
-		for k, v := range params {
-			formData.Set(k, fmt.Sprintf("%v", v))
-		}
-		body = []byte(formData.Encode())
+	body, err = json.Marshal(params)
+	if err != nil {
+		return nil, fmt.Errorf("编码参数失败: %v", err)
 	}
 
 	req, err := http.NewRequest("POST", requestURL, bytes.NewReader(body))
@@ -131,9 +116,7 @@ func doRequest(path string, params map[string]interface{}, proxy bool, cookies *
 		return nil, fmt.Errorf("创建请求失败: %v", err)
 	}
 
-	if isJSON {
-		req.Header.Set("Content-Type", "application/json")
-	}
+	req.Header.Set("Content-Type", "application/json")
 
 	if cookies != nil && *cookies != "" {
 		req.Header.Set("Cookie", *cookies)
@@ -141,20 +124,9 @@ func doRequest(path string, params map[string]interface{}, proxy bool, cookies *
 
 	client := &http.Client{
 		Timeout: 30 * time.Second,
-	}
-
-	if proxy {
-		proxyURL, _ := url.Parse("http://127.0.0.1:7890")
-		transport := &http.Transport{
-			Proxy:           http.ProxyURL(proxyURL),
+		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
-		client.Transport = transport
-	} else {
-		transport := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
-		client.Transport = transport
+		},
 	}
 
 	resp, err := client.Do(req)
@@ -184,16 +156,4 @@ func doRequest(path string, params map[string]interface{}, proxy bool, cookies *
 
 func generateUniqID() string {
 	return fmt.Sprintf("cert_%d", time.Now().UnixNano())
-}
-
-func parseParams(params map[string]interface{}) (username, password, id string, proxy float64) {
-	username, _ = params["username"].(string)
-	password, _ = params["password"].(string)
-	id, _ = params["id"].(string)
-	if v, ok := params["proxy"].(float64); ok {
-		proxy = v
-	} else if v, ok := params["proxy"].(string); ok {
-		proxy, _ = strconv.ParseFloat(v, 64)
-	}
-	return
 }

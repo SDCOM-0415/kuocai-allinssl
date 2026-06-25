@@ -30,29 +30,25 @@ var pluginMeta = map[string]interface{}{
 	"version":     "1.0.0",
 	"author":      "allinssl",
 	"config": map[string]interface{}{
-		"username": "用户名",
+		"username": "登录邮箱/手机",
 		"password": "密码",
-		"id":       "域名ID",
-		"proxy":    "是否使用代理(0或1)",
 	},
 	"actions": []ActionInfo{
 		{
 			Name:        "check",
 			Description: "验证账号配置是否正确",
 			Params: map[string]interface{}{
-				"username": "用户名",
+				"username": "登录邮箱/手机",
 				"password": "密码",
-				"proxy":    "是否使用代理",
 			},
 		},
 		{
 			Name:        "deploy",
 			Description: "部署SSL证书到融毅盾",
 			Params: map[string]interface{}{
-				"id":        "域名ID",
-				"fullchain": "完整证书链",
+				"id":         "域名ID",
+				"fullchain":  "完整证书链",
 				"privatekey": "私钥",
-				"proxy":     "是否使用代理",
 			},
 		},
 	},
