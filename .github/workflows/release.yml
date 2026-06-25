@@ -49,7 +49,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ steps.read_version.outputs.VERSION }}
-        name: Release ${{ steps.read_version.outputs.VERSION }}
+        name: ${{ steps.read_version.outputs.VERSION }}
         body: |
           Automated build release for yrdcdn plugin
           
