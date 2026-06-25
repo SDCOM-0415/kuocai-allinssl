@@ -25,13 +25,25 @@ jobs:
         VERSION=$(cat ver.txt | tr -d '\n')
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
-    - name: Build for Linux
+    - name: Build for Linux amd64
       run: |
         cd yrdcdn
-        go build -o yrdcdn-linux-amd64 .
+        GOOS=linux GOARCH=amd64 go build -o yrdcdn-linux-amd64 .
         chmod +x yrdcdn-linux-amd64
 
-    - name: Build for Windows
+    - name: Build for Linux arm64
+      run: |
+        cd yrdcdn
+        GOOS=linux GOARCH=arm64 go build -o yrdcdn-linux-arm64 .
+        chmod +x yrdcdn-linux-arm64
+
+    - name: Build for Linux armv7
+      run: |
+        cd yrdcdn
+        GOOS=linux GOARCH=arm GOARM=7 go build -o yrdcdn-linux-armv7 .
+        chmod +x yrdcdn-linux-armv7
+
+    - name: Build for Windows amd64
       run: |
         cd yrdcdn
         GOOS=windows GOARCH=amd64 go build -o yrdcdn-windows-amd64.exe .
@@ -43,6 +55,8 @@ jobs:
         name: yrdcdn-builds
         path: |
           yrdcdn/yrdcdn-linux-amd64
+          yrdcdn/yrdcdn-linux-arm64
+          yrdcdn/yrdcdn-linux-armv7
           yrdcdn/yrdcdn-windows-amd64.exe
 
     - name: Create Release
@@ -50,8 +64,21 @@ jobs:
       with:
         tag: ${{ steps.read_version.outputs.VERSION }}
         name: ${{ steps.read_version.outputs.VERSION }}
+        body: |
+          融毅盾SSL证书部署插件
+
+          ## 平台对应说明
+
+          | 文件 | 适用平台 | 说明 |
+          |------|----------|------|
+          | `yrdcdn-linux-amd64` | Linux x86_64 | 适用于大多数 Linux 服务器（Intel/AMD 64位） |
+          | `yrdcdn-linux-arm64` | Linux ARM64 | 适用于 ARM64 架构设备（如树莓派4/5、群晖ARM64、Oracle Cloud ARM） |
+          | `yrdcdn-linux-armv7` | Linux ARMv7 | 适用于 32位 ARM 设备（如树莓派2/3、旧款ARM路由器/NAS） |
+          | `yrdcdn-windows-amd64.exe` | Windows x86_64 | 适用于 Windows 64位系统 |
         artifacts: |
           yrdcdn/yrdcdn-linux-amd64
+          yrdcdn/yrdcdn-linux-arm64
+          yrdcdn/yrdcdn-linux-armv7
           yrdcdn/yrdcdn-windows-amd64.exe
         generateReleaseNotes: true
         skipIfReleaseExists: true
