@@ -22,7 +22,7 @@ jobs:
     - name: Read version
       id: read_version
       run: |
-        VERSION=$(cat ver.txt | tr -d '\n')
+        VERSION=$(cat ver.txt | tr -d '\r\n ' )
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build for Linux amd64

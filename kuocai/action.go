@@ -12,22 +12,20 @@ import (
 	"time"
 )
 
-const defaultBaseURL = "https://rcdn.hydun.com"
-
 type checkResponse struct {
 	Code    string      `json:"code"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
 
-func getBaseURL(params map[string]interface{}) string {
+func getBaseURL(params map[string]interface{}) (string, error) {
 	baseUrl, _ := params["baseUrl"].(string)
 	baseUrl = strings.TrimSpace(baseUrl)
 	if baseUrl == "" {
-		return defaultBaseURL
+		return "", errors.New("平台地址不能为空")
 	}
 	baseUrl = strings.TrimRight(baseUrl, "/")
-	return baseUrl
+	return baseUrl, nil
 }
 
 func check(params map[string]interface{}) (*Response, error) {
@@ -113,7 +111,10 @@ func Upload(params map[string]interface{}) (*Response, error) {
 }
 
 func doRequest(params map[string]interface{}, path string, bodyParams map[string]interface{}, cookies *string) (interface{}, error) {
-	baseURL := getBaseURL(params)
+	baseURL, err := getBaseURL(params)
+	if err != nil {
+		return nil, err
+	}
 	requestURL := baseURL + path
 
 	var body []byte
