@@ -32,10 +32,10 @@ go.work.sum
 # .vscode/
 
 # Project specific
-plugins/yrdcdn/yrdcdn-linux-amd64
-plugins/yrdcdn/yrdcdn-windows-amd64.exe
-plugins/yrdcdn/yrdcdn-darwin-amd64
-plugins/yrdcdn/yrdcdn
+yrdcdn/yrdcdn-linux-amd64
+yrdcdn/yrdcdn-windows-amd64.exe
+yrdcdn/yrdcdn-darwin-amd64
+yrdcdn/yrdcdn
 
 .kagent/
 *.log
