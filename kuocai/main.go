@@ -66,18 +66,18 @@ var pluginMeta = pluginMetaJSON{
 	Version:     "1.0.0",
 	Author:      "allinssl",
 	Config: orderedParams{
+		{Key: "baseUrl", Label: "平台地址"},
 		{Key: "username", Label: "登录邮箱/手机"},
 		{Key: "password", Label: "密码"},
-		{Key: "baseUrl", Label: "平台地址"},
 	},
 	Actions: []actionJSON{
 		{
 			Name:        "check",
 			Description: "验证账号配置是否正确",
 			Params: orderedParams{
+				{Key: "baseUrl", Label: "平台地址"},
 				{Key: "username", Label: "登录邮箱/手机"},
 				{Key: "password", Label: "密码"},
-				{Key: "baseUrl", Label: "平台地址"},
 			},
 		},
 		{
