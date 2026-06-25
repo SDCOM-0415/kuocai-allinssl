@@ -44,18 +44,22 @@ func check(params map[string]interface{}) (*Response, error) {
 	}, nil
 }
 
-func deploy(params map[string]interface{}) (*Response, error) {
-	id, _ := params["id"].(string)
-	fullchain, _ := params["fullchain"].(string)
-	privatekey, _ := params["privatekey"].(string)
+func Upload(params map[string]interface{}) (*Response, error) {
+	certStr, _ := params["cert"].(string)
+	keyStr, _ := params["key"].(string)
 	username, _ := params["username"].(string)
 	password, _ := params["password"].(string)
+	domainId, _ := params["domainId"].(string)
 
-	if id == "" {
+	if username == "" || password == "" {
+		return nil, errors.New("登录邮箱/手机或密码不能为空")
+	}
+
+	if domainId == "" {
 		return nil, errors.New("域名ID不能为空")
 	}
 
-	if fullchain == "" || privatekey == "" {
+	if certStr == "" || keyStr == "" {
 		return nil, errors.New("证书或私钥不能为空")
 	}
 
@@ -75,14 +79,14 @@ func deploy(params map[string]interface{}) (*Response, error) {
 
 	cookies := fmt.Sprintf("kuocai_cdn_token=%s", tokenStr)
 
-	_, err = doRequest("/CdnDomainHttps/httpsConfiguration", map[string]interface{}{
-		"doMainId": id,
+	res, err := doRequest("/CdnDomainHttps/httpsConfiguration", map[string]interface{}{
+		"doMainId": domainId,
 		"https": map[string]interface{}{
 			"certificate_name":   generateUniqID(),
 			"certificate_source": "0",
-			"certificate_value":  fullchain,
+			"certificate_value":  certStr,
 			"https_status":       "on",
-			"private_key":        privatekey,
+			"private_key":        keyStr,
 		},
 	}, &cookies)
 
@@ -92,10 +96,8 @@ func deploy(params map[string]interface{}) (*Response, error) {
 
 	return &Response{
 		Status:  "success",
-		Message: fmt.Sprintf("域名ID:%s 更新成功", id),
-		Result: map[string]interface{}{
-			"domain_id": id,
-		},
+		Message: fmt.Sprintf("域名ID:%s 更新成功", domainId),
+		Result:  res.(map[string]interface{}),
 	}, nil
 }
 
