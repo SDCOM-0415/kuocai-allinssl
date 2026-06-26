@@ -6,12 +6,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 //go:embed metadata.json
 var metadataJSON []byte
 
 var pluginMeta map[string]interface{}
+
+var debugMode = "false"
 
 func init() {
 	if err := json.Unmarshal(metadataJSON, &pluginMeta); err != nil {
@@ -30,7 +33,19 @@ type Response struct {
 	Result  map[string]interface{} `json:"result"`
 }
 
+var logLines []string
+
+func dlog(format string, args ...interface{}) {
+	if debugMode != "true" {
+		return
+	}
+	logLines = append(logLines, fmt.Sprintf(format, args...))
+}
+
 func outputJSON(resp *Response) {
+	if debugMode == "true" && len(logLines) > 0 {
+		resp.Message = "[DEBUG]\n" + strings.Join(logLines, "\n") + "\n" + resp.Message
+	}
 	_ = json.NewEncoder(os.Stdout).Encode(resp)
 }
 
@@ -49,10 +64,21 @@ func main() {
 		return
 	}
 
+	dlog("收到原始输入: %s", string(input))
+
 	if err := json.Unmarshal(input, &req); err != nil {
 		outputError("解析请求失败", err)
 		return
 	}
+
+	dlog("action=%s", req.Action)
+	dlog("params keys: %v", func() []string {
+		keys := make([]string, 0, len(req.Params))
+		for k := range req.Params {
+			keys = append(keys, k)
+		}
+		return keys
+	}())
 
 	switch req.Action {
 	case "get_metadata":
@@ -60,6 +86,13 @@ func main() {
 	case "list_actions":
 		outputJSON(&Response{Status: "success", Message: "支持的动作", Result: map[string]interface{}{"actions": pluginMeta["actions"]}})
 	case "upload":
+		dlog("baseUrl=%v username=%v domainId=%v cert_len=%d key_len=%d",
+			req.Params["baseUrl"],
+			req.Params["username"],
+			req.Params["domainId"],
+			len(fmt.Sprintf("%v", req.Params["cert"])),
+			len(fmt.Sprintf("%v", req.Params["key"])),
+		)
 		resp, err := Upload(req.Params)
 		if err != nil {
 			outputError("部署失败", err)

@@ -25,39 +25,23 @@ jobs:
         VERSION=$(cat ver.txt | tr -d '\r\n ' )
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
-    - name: Build for Linux amd64
+    - name: Build release binaries
       run: |
         cd kuocai
         GOOS=linux GOARCH=amd64 go build -o kuocai-linux-amd64 .
-        chmod +x kuocai-linux-amd64
-
-    - name: Build for Linux arm64
-      run: |
-        cd kuocai
         GOOS=linux GOARCH=arm64 go build -o kuocai-linux-arm64 .
-        chmod +x kuocai-linux-arm64
-
-    - name: Build for Linux armv7
-      run: |
-        cd kuocai
         GOOS=linux GOARCH=arm GOARM=7 go build -o kuocai-linux-armv7 .
-        chmod +x kuocai-linux-armv7
+        GOOS=windows GOARCH=amd64 go build -o kuocai-windows-amd64.exe .
+        chmod +x kuocai-linux-amd64 kuocai-linux-arm64 kuocai-linux-armv7
 
-    - name: Build for Windows amd64
+    - name: Build debug binaries
       run: |
         cd kuocai
-        GOOS=windows GOARCH=amd64 go build -o kuocai-windows-amd64.exe .
-        chmod +x kuocai-windows-amd64.exe
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: kuocai-builds
-        path: |
-          kuocai/kuocai-linux-amd64
-          kuocai/kuocai-linux-arm64
-          kuocai/kuocai-linux-armv7
-          kuocai/kuocai-windows-amd64.exe
+        GOOS=linux GOARCH=amd64 go build -ldflags "-X main.debugMode=true" -o kuocai-linux-amd64-debug .
+        GOOS=linux GOARCH=arm64 go build -ldflags "-X main.debugMode=true" -o kuocai-linux-arm64-debug .
+        GOOS=linux GOARCH=arm GOARM=7 go build -ldflags "-X main.debugMode=true" -o kuocai-linux-armv7-debug .
+        GOOS=windows GOARCH=amd64 go build -ldflags "-X main.debugMode=true" -o kuocai-windows-amd64-debug.exe .
+        chmod +x kuocai-linux-amd64-debug kuocai-linux-arm64-debug kuocai-linux-armv7-debug
 
     - name: Create Release
       uses: ncipollo/release-action@v1
@@ -75,11 +59,24 @@ jobs:
           | `kuocai-linux-arm64` | Linux ARM64 | 适用于 ARM64 架构设备（如树莓派4/5、群晖ARM64、Oracle Cloud ARM） |
           | `kuocai-linux-armv7` | Linux ARMv7 | 适用于 32位 ARM 设备（如树莓派2/3、旧款ARM路由器/NAS） |
           | `kuocai-windows-amd64.exe` | Windows x86_64 | 适用于 Windows 64位系统 |
+
+          ## Debug 版本（用于排查问题，任务日志会输出详细信息）
+
+          | 文件 | 适用平台 |
+          |------|----------|
+          | `kuocai-linux-amd64-debug` | Linux x86_64 |
+          | `kuocai-linux-arm64-debug` | Linux ARM64 |
+          | `kuocai-linux-armv7-debug` | Linux ARMv7 |
+          | `kuocai-windows-amd64-debug.exe` | Windows x86_64 |
         artifacts: |
           kuocai/kuocai-linux-amd64
           kuocai/kuocai-linux-arm64
           kuocai/kuocai-linux-armv7
           kuocai/kuocai-windows-amd64.exe
+          kuocai/kuocai-linux-amd64-debug
+          kuocai/kuocai-linux-arm64-debug
+          kuocai/kuocai-linux-armv7-debug
+          kuocai/kuocai-windows-amd64-debug.exe
         generateReleaseNotes: true
         skipIfReleaseExists: true
         token: ${{ secrets.GITHUB_TOKEN }}
