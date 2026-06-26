@@ -75,10 +75,14 @@ func Upload(params map[string]interface{}) (*Response, error) {
 		return nil, err
 	}
 
+	result, _ := res.(map[string]interface{})
+	if result == nil {
+		result = map[string]interface{}{}
+	}
 	return &Response{
 		Status:  "success",
 		Message: fmt.Sprintf("域名ID:%s 更新成功", domainId),
-		Result:  res.(map[string]interface{}),
+		Result:  result,
 	}, nil
 }
 
