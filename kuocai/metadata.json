@@ -1,0 +1,40 @@
+{
+  "name": "kuocai",
+  "description": "括彩CDN SSL证书部署插件，支持所有基于括彩CDN系统的平台",
+  "version": "1.0.0",
+  "author": "allinssl",
+  "config": [
+    {
+      "name": "baseUrl",
+      "type": "string",
+      "description": "平台地址",
+      "required": true
+    },
+    {
+      "name": "username",
+      "type": "string",
+      "description": "登录邮箱/手机",
+      "required": true
+    },
+    {
+      "name": "password",
+      "type": "password",
+      "description": "密码",
+      "required": true
+    }
+  ],
+  "actions": [
+    {
+      "name": "upload",
+      "description": "部署SSL证书到括彩CDN平台",
+      "params": [
+        {
+          "name": "domainId",
+          "type": "string",
+          "description": "域名ID",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

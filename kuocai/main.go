@@ -1,16 +1,22 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 )
 
-type ActionInfo struct {
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-	Params      map[string]any `json:"params,omitempty"`
+//go:embed metadata.json
+var metadataJSON []byte
+
+var pluginMeta map[string]interface{}
+
+func init() {
+	if err := json.Unmarshal(metadataJSON, &pluginMeta); err != nil {
+		panic(fmt.Sprintf("解析元数据失败: %v", err))
+	}
 }
 
 type Request struct {
@@ -22,27 +28,6 @@ type Response struct {
 	Status  string                 `json:"status"`
 	Message string                 `json:"message"`
 	Result  map[string]interface{} `json:"result"`
-}
-
-var pluginMeta = map[string]interface{}{
-	"name":        "kuocai",
-	"description": "括彩CDN SSL证书部署插件，支持所有基于括彩CDN系统的平台",
-	"version":     "1.0.0",
-	"author":      "allinssl",
-	"config": map[string]interface{}{
-		"baseUrl":  "平台地址",
-		"username": "登录邮箱/手机",
-		"password": "密码",
-	},
-	"actions": []ActionInfo{
-		{
-			Name:        "upload",
-			Description: "部署SSL证书到括彩CDN平台",
-			Params: map[string]any{
-				"domainId": "域名ID",
-			},
-		},
-	},
 }
 
 func outputJSON(resp *Response) {
@@ -71,17 +56,9 @@ func main() {
 
 	switch req.Action {
 	case "get_metadata":
-		outputJSON(&Response{
-			Status:  "success",
-			Message: "插件信息",
-			Result:  pluginMeta,
-		})
+		outputJSON(&Response{Status: "success", Message: "插件信息", Result: pluginMeta})
 	case "list_actions":
-		outputJSON(&Response{
-			Status:  "success",
-			Message: "支持的动作",
-			Result:  map[string]interface{}{"actions": pluginMeta["actions"]},
-		})
+		outputJSON(&Response{Status: "success", Message: "支持的动作", Result: map[string]interface{}{"actions": pluginMeta["actions"]}})
 	case "upload":
 		resp, err := Upload(req.Params)
 		if err != nil {
@@ -90,9 +67,6 @@ func main() {
 		}
 		outputJSON(resp)
 	default:
-		outputJSON(&Response{
-			Status:  "error",
-			Message: "未知 action: " + req.Action,
-		})
+		outputJSON(&Response{Status: "error", Message: "未知 action: " + req.Action})
 	}
 }
